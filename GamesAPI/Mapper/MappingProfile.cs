@@ -13,11 +13,15 @@ namespace GamesAPI.Mapper
 
             CreateMap<Game, GameDto>();
             CreateMap<GameCreateDto, Game>();
-            CreateMap<GameUpdateDto, Game>();
+            CreateMap<GameDto, Game>();
 
 
             CreateMap<GameTeam, GameTeamDto>();
             CreateMap<GameTeamDto, GameTeam>();
+
+            CreateMap<Player, PlayerDto>();
+            CreateMap<PlayerCreateDto, Player>();
+            CreateMap<PlayerDto, Player>();
 
         }
     }

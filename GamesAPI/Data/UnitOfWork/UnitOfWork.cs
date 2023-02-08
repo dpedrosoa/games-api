@@ -19,6 +19,8 @@ namespace GamesAPI.Data.UnitOfWork
         public IRepository<Game> GameRepository => _GameRepository ?? new Repository<Game>(_context);
 
 
+        private IRepository<Player> _PlayerRepository;
+        public IRepository<Player> PlayerRepository => _PlayerRepository ?? new Repository<Player>(_context);
 
         #endregion
 
