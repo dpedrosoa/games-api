@@ -2,6 +2,8 @@
 using GamesAPI.Data.UnitOfWork;
 using GamesAPI.Models;
 using GamesAPI.Models.DTO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GamesAPI.Services
 {
@@ -84,5 +86,22 @@ namespace GamesAPI.Services
             }
         }
 
+        public async Task<List<TeamDto>> GetTeamsByPlayer(int playerId)
+        {
+            List<TeamDto> teamsDto = new List<TeamDto>();
+            var player = (await _unitOfWork.PlayerRepository
+                .GetAll(
+                    filter: x => x.Id == playerId,
+                    include: x => x.Include(p => p.TeamPlayers).ThenInclude(t => t.Team)
+                    )
+                ).FirstOrDefault();
+
+            if(player != null)
+            {
+                var teams = player.TeamPlayers.Select(x => x.Team);
+                teamsDto = _mapper.Map<List<TeamDto>>(teams);
+            }
+            return teamsDto;
+        }
     }
 }

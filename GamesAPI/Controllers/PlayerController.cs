@@ -96,5 +96,18 @@ namespace GamesAPI.Controllers
             }
             return Ok("Deleted");
         }
+
+        [HttpGet("{playerId}/teams")]
+        public async Task<ActionResult<List<TeamDto>>> GetTeamsByPlayer(int playerId)
+        {
+            if (playerId <= 0)
+                return BadRequest();
+
+            if (!await _playerService.Any(playerId))
+                return NotFound();
+
+            var teams = await _playerService.GetTeamsByPlayer(playerId);
+            return Ok(teams);
+        }
     }
 }
