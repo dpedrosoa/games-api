@@ -108,5 +108,39 @@ namespace GamesAPI.Services
             }
             return teamsDto;
         }
+
+        public async Task<bool> AddTeamToGame(int gameId, int teamId)
+        {
+            var game = (await _unitOfWork.GameRepository
+                .GetAll(
+                    filter: x=>x.Id == gameId,
+                    include: x=>x.Include(g=>g.GameTeams).ThenInclude(t => t.Team),
+                    disabledTracking: false
+                    )
+                ).FirstOrDefault();
+
+            try
+            {
+                if (game != null)
+                {
+                    // already exists
+                    if (game.GameTeams.Select(x => x.TeamId).Contains(teamId))
+                        return true;
+
+                    game.GameTeams.Add(new GameTeam { GameId = gameId, TeamId = teamId });
+                    _unitOfWork.GameRepository.Update(game);
+                    return await _unitOfWork.Save();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
     }
 }

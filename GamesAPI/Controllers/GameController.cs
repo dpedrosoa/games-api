@@ -4,6 +4,7 @@ using GamesAPI.Models;
 using GamesAPI.Models.DTO;
 using GamesAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,10 +15,12 @@ namespace GamesAPI.Controllers
     public class GameController : ControllerBase
     {
         private readonly IGameService _gameService;
+        private readonly ITeamService _teamService;
 
-        public GameController(IGameService gameService)
+        public GameController(IGameService gameService, ITeamService teamService)
         {
             _gameService = gameService;
+            _teamService = teamService;
         }
 
         // GET: api/<GameController>
@@ -113,5 +116,32 @@ namespace GamesAPI.Controllers
             var teams = await _gameService.GetTeamsByGame(gameId);
             return Ok(teams);
         }
+
+        [HttpPost("{gameId}/teams/{teamId}")]
+        public async Task<ActionResult> AddTeamToGame(int gameId, int teamId)
+        {
+            if (gameId <= 0 || teamId <= 0)
+                return BadRequest();
+
+            if (!await _gameService.Any(gameId))
+                ModelState.AddModelError("", "Game not found");
+
+            if (!await _teamService.Any(teamId))
+                ModelState.AddModelError("", "Team not found");
+
+            if(!ModelState.IsValid)
+                return NotFound(ModelState);
+
+            var saved = await _gameService.AddTeamToGame(gameId, teamId);
+            if (!saved)
+            {
+                ModelState.AddModelError("", "Error saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Added");
+        }
+
+
     }
 }

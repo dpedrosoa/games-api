@@ -6,6 +6,6 @@
         public Game Game { get; set; }
         public int TeamId { get; set; }
         public Team Team { get; set; }
-        public int TeamScore { get; set; }
+        public int TeamScore { get; set; } = 0;
     }
 }
