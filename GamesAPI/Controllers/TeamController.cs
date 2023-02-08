@@ -11,10 +11,12 @@ namespace GamesAPI.Controllers
     public class TeamController : ControllerBase
     {
         private readonly ITeamService _teamService;
+        private readonly IPlayerService _playerService;
 
-        public TeamController(ITeamService teamService)
+        public TeamController(ITeamService teamService, IPlayerService playerService)
         {
             _teamService = teamService;
+            _playerService = playerService;
         }
 
         // GET: api/<TeamController>
@@ -95,5 +97,43 @@ namespace GamesAPI.Controllers
 
             return Ok("Deleted");
         }
+
+        [HttpGet("{teamId}/players")]
+        public async Task<ActionResult<List<PlayerDto>>> GetPlayersByTeam(int teamId)
+        {
+            if (teamId <= 0)
+                return BadRequest();
+
+            if (!await _teamService.Any(teamId))
+                return NotFound();
+
+            var players = await _teamService.GetPlayersByTeam(teamId);
+            return Ok(players);
+        }
+
+        [HttpPost("{teamId}/players/{playerId}")]
+        public async Task<ActionResult> AddPlayerToTeam(int teamId, int playerId)
+        {
+            if (teamId <= 0 || playerId <= 0)
+                return BadRequest();
+
+            if (!await _teamService.Any(teamId))
+                ModelState.AddModelError("", "Team not found");
+
+            if (!await _playerService.Any(playerId))
+                ModelState.AddModelError("", "Player not found");
+
+            if (!ModelState.IsValid)
+                return NotFound(ModelState);
+
+            var saved = await _teamService.AddPlayerToTeam(teamId, playerId);
+            if(!saved)
+            {
+                ModelState.AddModelError("", "Error saving");
+                StatusCode(500, ModelState);
+            }
+            return Ok("Added");
+        }
+
     }
 }

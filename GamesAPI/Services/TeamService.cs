@@ -2,6 +2,7 @@
 using GamesAPI.Data.UnitOfWork;
 using GamesAPI.Models;
 using GamesAPI.Models.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace GamesAPI.Services
 {
@@ -86,5 +87,57 @@ namespace GamesAPI.Services
             }
         }
 
+        public async Task<List<PlayerDto>> GetPlayersByTeam(int teamId)
+        {
+            List<PlayerDto> playersDto = new List<PlayerDto>();
+            var team = (await _unitOfWork.TeamRepository
+                .GetAll(
+                    filter: x => x.Id == teamId,
+                    include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player)
+                    )
+                ).FirstOrDefault();
+
+            if(team != null)
+            {
+                var players = team.TeamPlayers.Select(x => x.Player);
+                playersDto = _mapper.Map<List<PlayerDto>>(players);
+            }
+
+            return playersDto;
+        }
+
+        public async Task<bool> AddPlayerToTeam(int teamId, int playerId)
+        {
+            var team = (await _unitOfWork.TeamRepository
+                .GetAll(
+                    filter: x => x.Id == teamId,
+                    include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
+                    disabledTracking: false
+                    )
+                ).FirstOrDefault();
+
+            try
+            {
+                if (team != null)
+                {
+                    // already exists
+                    if (team.TeamPlayers.Select(x => x.PlayerId).Contains(playerId))
+                        return true;
+
+                    team.TeamPlayers.Add(new TeamPlayer { TeamId = teamId, PlayerId = playerId });
+                    _unitOfWork.TeamRepository.Update(team);
+                    return await _unitOfWork.Save();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            
+        }
     }
 }
