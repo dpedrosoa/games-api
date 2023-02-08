@@ -8,13 +8,9 @@ namespace GamesAPI.Mapper
     {
         public MappingProfile()
         {
-            CreateMap<Team, TeamDto>();
-            CreateMap<TeamDto, Team>();
-
             CreateMap<Game, GameDto>();
             CreateMap<GameCreateDto, Game>();
             CreateMap<GameDto, Game>();
-
 
             CreateMap<GameTeam, GameTeamDto>();
             CreateMap<GameTeamDto, GameTeam>();
@@ -22,6 +18,10 @@ namespace GamesAPI.Mapper
             CreateMap<Player, PlayerDto>();
             CreateMap<PlayerCreateDto, Player>();
             CreateMap<PlayerDto, Player>();
+
+            CreateMap<Team, TeamDto>();
+            CreateMap<TeamCreateDto, Team>();
+            CreateMap<TeamDto, Team>();
 
         }
     }

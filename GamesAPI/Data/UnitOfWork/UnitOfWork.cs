@@ -22,6 +22,10 @@ namespace GamesAPI.Data.UnitOfWork
         private IRepository<Player> _PlayerRepository;
         public IRepository<Player> PlayerRepository => _PlayerRepository ?? new Repository<Player>(_context);
 
+
+        private IRepository<Team> _TeamRepository;
+        public IRepository<Team> TeamRepository => _TeamRepository ?? new Repository<Team>(_context);
+
         #endregion
 
         public void Dispose()
