@@ -45,7 +45,7 @@ namespace GamesAPI.Controllers
 
         // POST api/<GameController>
         [HttpPost]
-        public async Task<ActionResult<Game>> Post([FromBody] GameCreateDto dto)
+        public async Task<ActionResult> Post([FromBody] GameCreateDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -63,7 +63,7 @@ namespace GamesAPI.Controllers
 
         // PUT api/<GameController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<Game>> Put(int id, [FromBody] GameUpdateDto dto)
+        public async Task<ActionResult<Game>> Put(int id, [FromBody] GameDto dto)
         {
             if (dto == null || id != dto.Id || !ModelState.IsValid)
             {

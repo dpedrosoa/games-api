@@ -32,10 +32,10 @@ namespace GamesAPI.Services
 
         public async Task<IEnumerable<GameDto>> GetAll()
         {
-            var games = await _unitOfWork.GameRepository.GetAll(
-                include: x => x.Include(x => x.GameTeams).ThenInclude(x => x.Team),
-                orderBy: x => x.OrderBy(x => x.Name)
-                );
+            var games = await _unitOfWork.GameRepository.GetAll();
+                //include: x => x.Include(x => x.GameTeams).ThenInclude(x => x.Team),
+                //orderBy: x => x.OrderBy(x => x.Name)
+                //);
 
             var dto =_mapper.Map<IEnumerable<GameDto>>(games);
 
@@ -56,7 +56,7 @@ namespace GamesAPI.Services
             }
         }
 
-        public async Task<bool> Update(GameUpdateDto dto)
+        public async Task<bool> Update(GameDto dto)
         {
             var game = _mapper.Map<Game>(dto);
             try
