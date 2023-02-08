@@ -63,12 +63,15 @@ namespace GamesAPI.Controllers
 
         // PUT api/<GameController>/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<Game>> Put(int id, [FromBody] GameDto dto)
+        public async Task<ActionResult> Put(int id, [FromBody] GameDto dto)
         {
             if (dto == null || id != dto.Id || !ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            if (!await _gameService.Any(id))
+                return NotFound();
 
             var saved = await _gameService.Update(dto);
             if (!saved)

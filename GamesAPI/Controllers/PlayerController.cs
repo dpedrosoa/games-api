@@ -65,6 +65,9 @@ namespace GamesAPI.Controllers
             if(id <= 0 || dto == null || id != dto.Id || !ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (!await _playerService.Any(id))
+                return NotFound();
+
             var saved = await _playerService.Update(dto);
             if(!saved)
             {
