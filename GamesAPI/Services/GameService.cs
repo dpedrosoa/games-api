@@ -91,5 +91,22 @@ namespace GamesAPI.Services
             }
         }
 
+        public async Task<List<TeamDto>> GetTeamsByGame(int gameId)
+        {
+            List<TeamDto> teamsDto = new List<TeamDto>();
+            var game = (await _unitOfWork.GameRepository
+                .GetAll(
+                    filter: x => x.Id == gameId,
+                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team)
+                )
+                ).FirstOrDefault();
+
+            if(game != null)
+            {
+                var teams = game.GameTeams.Select(x => x.Team);
+                teamsDto = _mapper.Map<List<TeamDto>>(teams);
+            }
+            return teamsDto;
+        }
     }
 }

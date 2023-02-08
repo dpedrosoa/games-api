@@ -99,5 +99,19 @@ namespace GamesAPI.Controllers
 
             return Ok("Deleted");
         }
+
+
+        [HttpGet("{gameId}/teams")]
+        public async Task<ActionResult<List<TeamDto>>> GetTeamsByGame(int gameId)
+        {
+            if (gameId <= 0)
+                return BadRequest();
+
+            if (!await _gameService.Any(gameId))
+                return NotFound();
+
+            var teams = await _gameService.GetTeamsByGame(gameId);
+            return Ok(teams);
+        }
     }
 }
