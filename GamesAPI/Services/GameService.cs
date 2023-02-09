@@ -33,11 +33,11 @@ namespace GamesAPI.Services
         public async Task<IEnumerable<GameDto>> GetAll()
         {
             var games = await _unitOfWork.GameRepository.GetAll();
-                //include: x => x.Include(x => x.GameTeams).ThenInclude(x => x.Team),
-                //orderBy: x => x.OrderBy(x => x.Name)
-                //);
+            //include: x => x.Include(x => x.GameTeams).ThenInclude(x => x.Team),
+            //orderBy: x => x.OrderBy(x => x.Name)
+            //);
 
-            var dto =_mapper.Map<IEnumerable<GameDto>>(games);
+            var dto = _mapper.Map<IEnumerable<GameDto>>(games);
 
             return dto;
         }
@@ -101,7 +101,7 @@ namespace GamesAPI.Services
                 )
                 ).FirstOrDefault();
 
-            if(game != null)
+            if (game != null)
             {
                 var teams = game.GameTeams.Select(x => x.Team);
                 teamsDto = _mapper.Map<List<TeamDto>>(teams);
@@ -113,8 +113,8 @@ namespace GamesAPI.Services
         {
             var game = (await _unitOfWork.GameRepository
                 .GetAll(
-                    filter: x=>x.Id == gameId,
-                    include: x=>x.Include(g=>g.GameTeams).ThenInclude(t => t.Team),
+                    filter: x => x.Id == gameId,
+                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
                     disabledTracking: false
                     )
                 ).FirstOrDefault();
@@ -142,5 +142,57 @@ namespace GamesAPI.Services
             }
 
         }
+
+        public async Task<bool> DeleteTeamFromGame(int gameId, int teamId)
+        {
+            var game = (await _unitOfWork.GameRepository
+                .GetAll(
+                    filter: x => x.Id == gameId,
+                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
+                    disabledTracking: false
+                    )
+                ).FirstOrDefault();
+
+            try
+            {
+                if (game != null)
+                {
+                    var gTeam = game.GameTeams.FirstOrDefault(x => x.TeamId == teamId);
+                    if (gTeam != null)
+                    {
+                        game.GameTeams.Remove(gTeam);
+                        _unitOfWork.GameRepository.Update(game);
+                        return await _unitOfWork.Save();
+                    }
+                    else // team is not on game
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        //public async Task<TeamDto> GetWinnerTeam(int gameId)
+        //{
+        //    var game = (await _unitOfWork.GameRepository
+        //        .GetAll(
+        //            filter: x => x.Id == gameId,
+        //            include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team)
+        //            )
+        //        ).FirstOrDefault();
+
+        //    if (game != null)
+        //    {
+        //        game.GameTeams.MaxBy(t => t.TeamScore);
+        //    }
+        //}
     }
 }

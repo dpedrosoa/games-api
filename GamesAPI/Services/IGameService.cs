@@ -14,5 +14,6 @@ namespace GamesAPI.Services
 
         Task<List<TeamDto>> GetTeamsByGame(int gameId);
         Task<bool> AddTeamToGame(int gameId, int teamId);
+        Task<bool> DeleteTeamFromGame(int gameId, int teamId);
     }
 }
