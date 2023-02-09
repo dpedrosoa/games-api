@@ -15,6 +15,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // UnitOfWork and Repository
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IGameTeamRepository, GameTeamRepository>();
 
 // Services
 builder.Services.AddScoped<IGameService, GameService>();

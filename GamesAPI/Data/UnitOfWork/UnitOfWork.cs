@@ -26,6 +26,10 @@ namespace GamesAPI.Data.UnitOfWork
         private IRepository<Team> _TeamRepository;
         public IRepository<Team> TeamRepository => _TeamRepository ?? new Repository<Team>(_context);
 
+
+        private IGameTeamRepository _GameTeamRepository;
+        public IGameTeamRepository GameTeamRepository => _GameTeamRepository ?? new GameTeamRepository(_context);
+
         #endregion
 
         public void Dispose()
@@ -35,7 +39,8 @@ namespace GamesAPI.Data.UnitOfWork
 
         public async Task<bool> Save()
         {
-            return await _context.SaveChangesAsync() > 0;
+            int saved = await _context.SaveChangesAsync();
+            return saved > 0;
         }
     }
 }

@@ -111,35 +111,57 @@ namespace GamesAPI.Services
 
         public async Task<bool> AddTeamToGame(int gameId, int teamId)
         {
-            var game = (await _unitOfWork.GameRepository
-                .GetAll(
-                    filter: x => x.Id == gameId,
-                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
-                    disabledTracking: false
-                    )
-                ).FirstOrDefault();
-
+            // Adds a new GameTeam entity to the context
+            // Better performance, Only changes one entry to the database => GameTeam
             try
             {
-                if (game != null)
-                {
-                    // already exists
-                    if (game.GameTeams.Select(x => x.TeamId).Contains(teamId))
-                        return true;
+                _unitOfWork.GameTeamRepository.Add(
+                    new GameTeam { GameId = gameId, TeamId = teamId }
+                );
 
-                    game.GameTeams.Add(new GameTeam { GameId = gameId, TeamId = teamId });
-                    _unitOfWork.GameRepository.Update(game);
-                    return await _unitOfWork.Save();
-                }
-                else
-                {
-                    return false;
-                }
+                return await _unitOfWork.Save();
             }
             catch
             {
                 return false;
             }
+
+            // Adds a new GameTeam to the Game navigation property (GameTeams) and updates the Game
+            // Saves two entries to the database => GameTeam and Game
+            #region Other option that updates the Game and GameTeams
+
+            //var game = (await _unitOfWork.GameRepository
+            //    .GetAll(
+            //        filter: x => x.Id == gameId,
+            //        include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
+            //        disabledTracking: false
+            //        )
+            //    ).FirstOrDefault();
+
+            //try
+            //{
+            //    if (game != null)
+            //    {
+            //        // already exists
+            //        if (game.GameTeams.Select(x => x.TeamId).Contains(teamId))
+            //            return true;
+
+            //        game.GameTeams.Add(new GameTeam { GameId = gameId, TeamId = teamId });
+            //        _unitOfWork.GameRepository.Update(game);
+            //        return await _unitOfWork.Save();
+            //    }
+            //    else
+            //    {
+            //        return false;
+            //    }
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
+
+            #endregion
+
 
         }
 
@@ -179,21 +201,6 @@ namespace GamesAPI.Services
                 return false;
             }
         }
-
-        //public async Task<TeamDto> GetWinnerTeam(int gameId)
-        //{
-        //    var game = (await _unitOfWork.GameRepository
-        //        .GetAll(
-        //            filter: x => x.Id == gameId,
-        //            include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team)
-        //            )
-        //        ).FirstOrDefault();
-
-        //    if (game != null)
-        //    {
-        //        game.GameTeams.MaxBy(t => t.TeamScore);
-        //    }
-        //}
 
         
 
