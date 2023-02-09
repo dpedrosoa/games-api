@@ -139,5 +139,42 @@ namespace GamesAPI.Services
             }
             
         }
+
+        public async Task<bool> DeletePlayerFromTeam(int teamId, int playerId)
+        {
+            var team = (await _unitOfWork.TeamRepository
+                .GetAll(
+                    filter: x => x.Id == teamId,
+                    include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
+                    disabledTracking: false
+                    )
+                ).FirstOrDefault();
+
+            try
+            {
+                if(team != null)
+                {
+                    var tPlayer = team.TeamPlayers.FirstOrDefault(x=>x.PlayerId == playerId);
+                    if(tPlayer != null)
+                    {
+                        team.TeamPlayers.Remove(tPlayer);
+                        _unitOfWork.TeamRepository.Update(team);
+                        return await _unitOfWork.Save();
+                    }
+                    else // player is not on team
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

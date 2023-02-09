@@ -135,5 +135,31 @@ namespace GamesAPI.Controllers
             return Ok("Added");
         }
 
+
+        [HttpDelete("{teamId}/players/{playerId}")]
+        public async Task<ActionResult> DeletePlayerFromTeam(int teamId, int playerId)
+        {
+            if (teamId <= 0 || playerId <= 0)
+                return BadRequest();
+
+            if (!await _teamService.Any(teamId))
+                ModelState.AddModelError("", "Team not found");
+
+            if (!await _playerService.Any(playerId))
+                ModelState.AddModelError("", "Player not found");
+
+            if(!ModelState.IsValid)
+                return NotFound(ModelState);
+
+            var saved = await _teamService.DeletePlayerFromTeam(teamId, playerId);
+            if(!saved)
+            {
+                ModelState.AddModelError("", "Error saving");
+                StatusCode(500, ModelState);
+            }
+
+            return Ok("Deleted");
+        }
+
     }
 }
