@@ -167,5 +167,34 @@ namespace GamesAPI.Controllers
             return Ok("Deleted");
         }
 
+        [HttpPut("{gameId}/teams/{teamId}")]
+        public async Task<ActionResult> UpdateTeamScore(int gameId, int teamId, [FromBody] GameTeamDto gameTeamDto)
+        {
+            if (gameId <= 0 || teamId <= 0  || !ModelState.IsValid
+                || gameTeamDto == null
+                || gameId != gameTeamDto.GameId 
+                || teamId != gameTeamDto.TeamId)
+            {
+                return BadRequest(ModelState);
+            }
+                
+            if (!await _gameService.Any(gameId))
+                ModelState.AddModelError("", "Game not found");
+
+            if (!await _teamService.Any(teamId))
+                ModelState.AddModelError("", "Team not found");
+
+            if (!ModelState.IsValid)
+                return NotFound(ModelState);
+
+            var saved = await _gameService.UpdateTeamScore(gameTeamDto);
+            if(!saved)
+            {
+                ModelState.AddModelError("", "Error saving");
+                return StatusCode(500, ModelState);
+            }
+            return Ok("Updated");
+        }
+
     }
 }

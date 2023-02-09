@@ -194,5 +194,21 @@ namespace GamesAPI.Services
         //        game.GameTeams.MaxBy(t => t.TeamScore);
         //    }
         //}
+
+        
+
+        public async Task<bool> UpdateTeamScore(GameTeamDto gameTeamDto)
+        {
+            var gameTeam = _mapper.Map<GameTeam>(gameTeamDto);
+            try
+            {
+                _unitOfWork.GameTeamRepository.Update(gameTeam);
+                return await _unitOfWork.Save();
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
