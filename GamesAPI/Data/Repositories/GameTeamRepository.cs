@@ -26,5 +26,10 @@ namespace GamesAPI.Data.Repositories
         {
             _context.GameTeams.Remove(gameTeam);
         }
+
+        public async Task<GameTeam> Get(int gameId, int teamId)
+        {
+            return await _context.GameTeams.FindAsync(gameId, teamId);
+        }
     }
 }

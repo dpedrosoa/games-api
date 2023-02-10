@@ -115,11 +115,20 @@ namespace GamesAPI.Services
             // Better performance, Only changes one entry to the database => GameTeam
             try
             {
-                _unitOfWork.GameTeamRepository.Add(
-                    new GameTeam { GameId = gameId, TeamId = teamId }
-                );
+                // check if team is already added to the game
+                var gameTeam = await _unitOfWork.GameTeamRepository.Get(gameId, teamId);
+                if(gameTeam == null)
+                {
+                    _unitOfWork.GameTeamRepository.Add(
+                        new GameTeam { GameId = gameId, TeamId = teamId }
+                    );
 
-                return await _unitOfWork.Save();
+                    return await _unitOfWork.Save();
+                }
+                else // relation game-team exists (already added)
+                {
+                    return true;
+                }
             }
             catch
             {
@@ -127,7 +136,7 @@ namespace GamesAPI.Services
             }
 
             // Adds a new GameTeam to the Game navigation property (GameTeams) and updates the Game
-            // Saves two entries to the database => GameTeam and Game
+            // Saves two entries on the database => GameTeam and Game
             #region Other option that updates the Game and GameTeams
 
             //var game = (await _unitOfWork.GameRepository
@@ -167,39 +176,63 @@ namespace GamesAPI.Services
 
         public async Task<bool> DeleteTeamFromGame(int gameId, int teamId)
         {
-            var game = (await _unitOfWork.GameRepository
-                .GetAll(
-                    filter: x => x.Id == gameId,
-                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
-                    disabledTracking: false
-                    )
-                ).FirstOrDefault();
-
             try
             {
-                if (game != null)
-                {
-                    var gTeam = game.GameTeams.FirstOrDefault(x => x.TeamId == teamId);
-                    if (gTeam != null)
-                    {
-                        game.GameTeams.Remove(gTeam);
-                        _unitOfWork.GameRepository.Update(game);
-                        return await _unitOfWork.Save();
-                    }
-                    else // team is not on game
-                    {
-                        return true;
-                    }
+                // check if team is already deleted from the game
+                var gameTeam = await _unitOfWork.GameTeamRepository.Get(gameId, teamId);
+                if(gameTeam != null) {
+                    _unitOfWork.GameTeamRepository.Delete(gameTeam);
+                    return await _unitOfWork.Save();
                 }
-                else
+                else // relation game-team does not exist (already deleted)
                 {
-                    return false;
+                    return true;
                 }
             }
             catch
             {
                 return false;
             }
+
+            // Removes existing GameTeam from the Game navigation property (GameTeams) and updates the Game
+            // Saves two entries on the database => GameTeam and Game
+            #region Other option that updates the Game and GameTeams
+
+            //var game = (await _unitOfWork.GameRepository
+            //    .GetAll(
+            //        filter: x => x.Id == gameId,
+            //        include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team),
+            //        disabledTracking: false
+            //        )
+            //    ).FirstOrDefault();
+
+            //try
+            //{
+            //    if (game != null)
+            //    {
+            //        var gTeam = game.GameTeams.FirstOrDefault(x => x.TeamId == teamId);
+            //        if (gTeam != null)
+            //        {
+            //            game.GameTeams.Remove(gTeam);
+            //            _unitOfWork.GameRepository.Update(game);
+            //            return await _unitOfWork.Save();
+            //        }
+            //        else // team is not on game
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        return false;
+            //    }
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
+
+            #endregion
         }
 
         
