@@ -1,6 +1,7 @@
 using GamesAPI.Data;
 using GamesAPI.Data.Interfaces;
 using GamesAPI.Data.Repositories;
+using GamesAPI.Data.Seed;
 using GamesAPI.Data.UnitOfWork;
 using GamesAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Seed Service
+builder.Services.AddTransient<SeedService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -35,6 +39,21 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 
 var app = builder.Build();
+
+// Seed data context using the command => dotnet run seed
+if (args.Length == 1 && args[0] == "seed")
+    SeedDataContext(app);
+
+void SeedDataContext(IHost app)
+{
+    var scopedFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
+    using (var scope = scopedFactory.CreateScope())
+    {
+        var service = scope.ServiceProvider.GetService<SeedService>();
+        service.SeedDataContext();
+    }
+}
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
