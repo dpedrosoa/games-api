@@ -108,73 +108,118 @@ namespace GamesAPI.Services
 
         public async Task<bool> AddPlayerToTeam(int teamId, int playerId)
         {
-            var team = (await _unitOfWork.TeamRepository
-                .GetAll(
-                    filter: x => x.Id == teamId,
-                    include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
-                    disabledTracking: false
-                    )
-                ).FirstOrDefault();
-
             try
             {
-                if (team != null)
+                var teamPlayer = await _unitOfWork.TeamPlayerRepository.Get(teamId, playerId);
+                if(teamPlayer == null)
                 {
-                    // already exists
-                    if (team.TeamPlayers.Select(x => x.PlayerId).Contains(playerId))
-                        return true;
-
-                    team.TeamPlayers.Add(new TeamPlayer { TeamId = teamId, PlayerId = playerId });
-                    _unitOfWork.TeamRepository.Update(team);
+                    _unitOfWork.TeamPlayerRepository.Add(new TeamPlayer { TeamId = teamId, PlayerId = playerId });
                     return await _unitOfWork.Save();
                 }
-                else
+                else // player is already added to the team
                 {
-                    return false;
+                    return true;
                 }
             }
             catch
             {
                 return false;
             }
-            
+
+            #region Other option that updates two entries (Team and TeamPlayer)
+
+            //var team = (await _unitOfWork.TeamRepository
+            //    .GetAll(
+            //        filter: x => x.Id == teamId,
+            //        include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
+            //        disabledTracking: false
+            //        )
+            //    ).FirstOrDefault();
+
+            //try
+            //{
+            //    if (team != null)
+            //    {
+            //        // already exists
+            //        if (team.TeamPlayers.Select(x => x.PlayerId).Contains(playerId))
+            //            return true;
+
+            //        team.TeamPlayers.Add(new TeamPlayer { TeamId = teamId, PlayerId = playerId });
+            //        _unitOfWork.TeamRepository.Update(team);
+            //        return await _unitOfWork.Save();
+            //    }
+            //    else
+            //    {
+            //        return false;
+            //    }
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
+
+            #endregion
+
         }
 
         public async Task<bool> DeletePlayerFromTeam(int teamId, int playerId)
         {
-            var team = (await _unitOfWork.TeamRepository
-                .GetAll(
-                    filter: x => x.Id == teamId,
-                    include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
-                    disabledTracking: false
-                    )
-                ).FirstOrDefault();
-
             try
             {
-                if(team != null)
+                var teamPlayer = await _unitOfWork.TeamPlayerRepository.Get(teamId, playerId);
+                if(teamPlayer != null)
                 {
-                    var tPlayer = team.TeamPlayers.FirstOrDefault(x=>x.PlayerId == playerId);
-                    if(tPlayer != null)
-                    {
-                        team.TeamPlayers.Remove(tPlayer);
-                        _unitOfWork.TeamRepository.Update(team);
-                        return await _unitOfWork.Save();
-                    }
-                    else // player is not on team
-                    {
-                        return true;
-                    }
+                    _unitOfWork.TeamPlayerRepository.Delete(teamPlayer);
+                    return await _unitOfWork.Save();
                 }
-                else
+                else // player is already deleted from team
                 {
-                    return false;
+                    return true;
                 }
             }
             catch
             {
                 return false;
             }
+
+            #region Other option that updates two entries (Team and TeamPlayer)
+
+            //var team = (await _unitOfWork.TeamRepository
+            //    .GetAll(
+            //        filter: x => x.Id == teamId,
+            //        include: x => x.Include(t => t.TeamPlayers).ThenInclude(p => p.Player),
+            //        disabledTracking: false
+            //        )
+            //    ).FirstOrDefault();
+
+            //try
+            //{
+            //    if (team != null)
+            //    {
+            //        var tPlayer = team.TeamPlayers.FirstOrDefault(x => x.PlayerId == playerId);
+            //        if (tPlayer != null)
+            //        {
+            //            team.TeamPlayers.Remove(tPlayer);
+            //            _unitOfWork.TeamRepository.Update(team);
+            //            return await _unitOfWork.Save();
+            //        }
+            //        else // player is not on team
+            //        {
+            //            return true;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        return false;
+            //    }
+            //}
+            //catch
+            //{
+            //    return false;
+            //}
+
+            #endregion
+
         }
     }
 }

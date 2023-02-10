@@ -10,6 +10,7 @@ namespace GamesAPI.Data.UnitOfWork
         public IRepository<Team> TeamRepository { get; }
 
         public IGameTeamRepository GameTeamRepository { get; }
+        public ITeamPlayerRepository TeamPlayerRepository { get; }
         Task<bool> Save();   
     }
 }

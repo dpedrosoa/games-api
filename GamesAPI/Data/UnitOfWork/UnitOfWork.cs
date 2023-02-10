@@ -30,6 +30,10 @@ namespace GamesAPI.Data.UnitOfWork
         private IGameTeamRepository _GameTeamRepository;
         public IGameTeamRepository GameTeamRepository => _GameTeamRepository ?? new GameTeamRepository(_context);
 
+
+        private ITeamPlayerRepository _TeamPlayerRepository;
+        public ITeamPlayerRepository TeamPlayerRepository => _TeamPlayerRepository ?? new TeamPlayerRepository(_context);
+
         #endregion
 
         public void Dispose()
