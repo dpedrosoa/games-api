@@ -117,6 +117,19 @@ namespace GamesAPI.Controllers
             return Ok(teams);
         }
 
+        [HttpGet("{gameId}/teams-info")]
+        public async Task<ActionResult<List<GameTeamInfoDto>>> GetTeamsInfoByGame(int gameId)
+        {
+            if (gameId <= 0)
+                return BadRequest();
+
+            if (!await _gameService.Any(gameId))
+                return NotFound();
+
+            var teams = await _gameService.GetTeamsInfoByGame(gameId);
+            return Ok(teams);
+        }
+
         [HttpPost("{gameId}/teams/{teamId}")]
         public async Task<ActionResult> AddTeamToGame(int gameId, int teamId)
         {

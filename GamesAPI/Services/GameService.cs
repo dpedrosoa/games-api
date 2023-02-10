@@ -109,6 +109,36 @@ namespace GamesAPI.Services
             return teamsDto;
         }
 
+
+        public async Task<List<GameTeamInfoDto>> GetTeamsInfoByGame(int gameId)
+        {
+            List<GameTeamInfoDto> teamsInfoDto = new List<GameTeamInfoDto>();
+            var game = (await _unitOfWork.GameRepository
+                .GetAll(
+                    filter: x => x.Id == gameId,
+                    include: x => x.Include(g => g.GameTeams).ThenInclude(t => t.Team)
+                        .ThenInclude(tp => tp.TeamPlayers).ThenInclude(p => p.Player)
+                )
+                ).FirstOrDefault();
+
+            if (game != null)
+            {
+                teamsInfoDto = game.GameTeams
+                    .Select(x => new GameTeamInfoDto
+                    {
+                        TeamId = x.TeamId,
+                        TeamName = x.Team.Name,
+                        GameId = game.Id,
+                        TeamScore = x.TeamScore,
+                        Players = _mapper.Map<List<PlayerDto>>(x.Team.TeamPlayers.Select(x => x.Player))
+                    })
+                    .OrderByDescending(t => t.TeamScore)
+                    .ToList();
+            }
+            return teamsInfoDto;
+        }
+
+
         public async Task<bool> AddTeamToGame(int gameId, int teamId)
         {
             // Adds a new GameTeam entity to the context
