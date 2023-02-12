@@ -33,12 +33,8 @@ namespace GamesAPI.Services
         public async Task<IEnumerable<GameDto>> GetAll()
         {
             var games = await _unitOfWork.GameRepository.GetAll();
-            //include: x => x.Include(x => x.GameTeams).ThenInclude(x => x.Team),
-            //orderBy: x => x.OrderBy(x => x.Name)
-            //);
 
             var dto = _mapper.Map<IEnumerable<GameDto>>(games);
-
             return dto;
         }
 
@@ -155,7 +151,7 @@ namespace GamesAPI.Services
 
                     return await _unitOfWork.Save();
                 }
-                else // relation game-team exists (already added)
+                else // team is already added
                 {
                     return true;
                 }
@@ -214,7 +210,7 @@ namespace GamesAPI.Services
                     _unitOfWork.GameTeamRepository.Delete(gameTeam);
                     return await _unitOfWork.Save();
                 }
-                else // relation game-team does not exist (already deleted)
+                else // team is already deleted
                 {
                     return true;
                 }
